@@ -1,0 +1,156 @@
+#应用名称
+spring:
+  application:
+    name: gateway
+  cloud:
+    #gateway网关配置
+    gateway:
+      discovery:
+        locator:
+          #gateway开启服务注册和发现的功能
+          #并自动为注册中心的每个服务创建默认router
+          #默认router将以服务名开头的请求路径转发到对应的服务
+          #例如：http://网关地址/服务名称(配置lower-case-service-id后小写，不然大写)/**
+          enabled: false
+          #将请求路径上的服务名配置为小写（因为服务注册的时候，向注册中心注册时将服务名转成大写的了）
+          lower-case-service-id: true
+
+      #默认过滤器
+      #添加过滤器并将其应用于您可以使用的所有路线spring.cloud.gateway.default-filters。此属性采用过滤器列表
+#      default-filters:
+#        - AddResponseHeader = X-Response-Default-Foo, Default-Bar
+#        - PrefixPath = /httpbin
+
+      #自定义转发规则
+      #自定义转发规则和默认转发规则可以同时存在，一般自定义后会将默认的关闭，将enabled设置为false关闭默认规则
+      routes:
+        #每个router都需要一个唯一的id
+        - id: client
+          #uri以lb://开头（lb代表从注册中心获取服务），后面接的是要转发到的服务名称，服务名称和eureka中的对应
+          uri: lb://client
+          #predicate,将请求和路由进行匹配,Predict决定了请求由哪一个路由处理
+          #路由处理之前，需要经过“pre”类型的过滤器处理，处理返回响应之后，可以由“post”类型的过滤器处理
+          predicates:
+            #Path Route Predicate Factory
+            #需要一个参数: 一个spel表达式，应用匹配路径
+            #在下面配置中，所有的请求路径满足/c/{segment}的将会匹配并被路由
+            #例如：http://网关地址/c/action
+            - Path=/c/**
+
+            #AfterRoutePredicateFactory,
+            #配置一个时间，当请求的时间在配置时间之后，才交给router去处理。否则则报错，不通过路由
+#            - After=2019-01-20T17:42:47.789-07:00[America/Denver]
+
+            #BeforeRoutePredicateFactory
+            #配置一个时间，当请求的时间在配置时间之前，才交给router去处理。否则则报错，不通过路由
+#            - Before019-05-20T17:42:47.789-07:00[America/Denver]
+
+            #BetweenRoutePredicateFactory
+            #配置一个时间，当请求的时间在配置时间之间，才交给router去处理。否则则报错，不通过路由
+#            - Between=2019-01-20T17:42:47.789-07:00[America/Denver], 2019-05-21T17:42:47.789-07:00[America/Denver]
+
+            #Header Route Predicate Factory
+            #需要2个参数，一是header名，另一个header值，该值可以是一个正则表达式
+            #当此断言匹配了请求的header名和值时，断言通过，进入到router的规则中去
+            #在下面配置中，请求的Header中有X-Request-Id的header名，且header值为数字时，请求会被路由到配置的uri
+#            - Header=X-Request-Id, \d+
+
+            #Cookie Route Predicate Factory
+            #需要2个参数，一个是cookie名字，另一个是值，可以为正则表达式。
+            #它用于匹配请求中，带有该名称的cookie和cookie值匹配正则表达式的请求
+            #在下面的配置中，请求带有cookie名为name, cookie值为forezp的请求将都会转发到uri
+#            - Cookie=name, forezp
+
+            #Host Route Predicate Factory
+            #需要一个参数即hostname，它可以使用. * 等去匹配host。这个参数会匹配请求头中的host的值，一致，则请求正确转发
+#            - Host=**.fangzhipeng.com
+
+            #Method Route Predicate Factory
+            #需要一个参数，即请求的类型。比如GET类型的请求都转发到此路由
+            #在下面的配置中，所有的GET类型的请求都会路由转发到配置的uri
+#            - Method=GET
+
+            #Query Route Predicate Factory
+            #需要2个参数:一个参数名和一个参数值的正则表达式
+            #Query也可以只填一个参数，填一个参数时，则只匹配参数名，即请求的参数中含有配置的参数名，则命中路由
+            #- Query=name
+            #在下面的配置文件中，配置了请求中含有参数name，并且name的值匹配hdl，则请求命中路由
+#            - Query=name, hdl
+
+            #RemoteAddr Route Predicate Factory
+            #如果请求的远程地址时，则此路由将匹配192.168.1.10
+            #192.168.0.1/16（其中192.168.0.1是IP地址并且16是子网掩码）,也可以不要子网掩码
+#            - RemoteAddr = 192.168.1.1 / 16
+
+          #过滤器允许以某种方式修改传入的HTTP请求或传出的HTTP响应
+          #https://cloud.spring.io/spring-cloud-gateway/multi/multi__gatewayfilter_factories.html
+          filters:
+            #StripPrefix GatewayFilter Factory
+            #需要一个参数parts。该parts参数指示在向下游发送之前从请求中剥离的路径中的部分数
+            #StripPrefix的filter 在转发之前将/c去掉
+            - StripPrefix=1
+
+            #PrefixPath GatewayFilter Factory
+            #采用单个prefix参数,下面配置将为/mypath所有匹配请求的路径添加前缀。所以请求/hello，将发送给/mypath/hello
+#            - PrefixPath = /mypath
+
+            #AddRequestHeader GatewayFilter Factory
+            #采用名称和值参数,下面配置将为X-Request-Foo:Bar所有匹配请求的下游请求标头添加标头
+#            - AddRequestHeader = X-Request-Foo, Bar
+
+            #AddRequestParameter GatewayFilter Factory
+            #采用名称和值参数,下面配置将为foo=bar所有匹配请求添加下游请求的查询字符串
+#            - AddRequestParameter = foo, bar
+
+            #AddResponseHeader GatewayFilter Factory
+            #采用名称和值参数,下面配置将为X-Response-Foo:Bar所有匹配请求的下游响应标头添加标头
+#            - AddResponseHeader = X-Response-Foo, Bar
+
+            #PreserveHostHeader GatewayFilter Factory
+            #没有参数。此过滤器设置路由过滤器将检查的请求属性，以确定是否应发送原始主机头，而不是http客户端确定的主机头
+#            - PreserveHostHeader
+
+            #RemoveRequestHeader GatewayFilter Factory
+            #接受一个name参数。它是要删除的标头的名称，下面配置将X-Request-Foo在向下游发送之前删除标头
+#            - RemoveRequestHeader = X-Request-Foo
+
+            #RemoveResponseHeader GatewayFilter Factory
+            #接受一个name参数。它是要删除的标头的名称。下面配置将X-Response-Foo在响应返回到网关客户端之前从响应中删除标头
+#            - RemoveResponseHeader = X-Response-Foo
+
+            #RewritePath GatewayFilter Factory
+            #采用路径regexp参数和replacement参数。这使用Java正则表达式来灵活地重写请求路径
+            #对于请求路径/foo/bar，将设置/bar进行下游请求之前的路径。注意由于YAML规范而将$\其替换$
+#            - RewritePath=/foo/(?<segment>.*), /$\{segment}
+
+            #SaveSession GatewayFilter Factory
+            #在转发下游之前强制执行WebSession::save操作。当使用Spring Session与惰性数据存储之类的东西时，这是特别有用的，并且需要确保在转发调用之前已保存会话状态
+            #如果要将Spring Security与Spring Session 集成，并且希望确保将安全性详细信息转发到远程进程，则这很关键
+#            - SaveSession
+
+
+#端口号
+server:
+  port: 8888
+  #设置随机端口号，0表示随机
+#  port: 0
+
+#服务注册中心
+eureka:
+  instance:
+    #续约到期时间,心跳检查
+    lease-expiration-duration-in-seconds: 90
+    #续约更新时间
+    lease-renewal-interval-in-seconds: 30
+    #向注册中心注册显示的实例名称，默认取应用名称，如果名称和端口号都相同，会造成冲突
+    #1.不同应用服务设置不同名称来区分
+    #2.相同应用服务设置不同端口号来区分
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    #配置开启监控功能
+    healthcheck:
+      enable: true
+    serviceUrl:
+      #指向服务注册中心的地址，如果是注册中心集群，写一个注册中心的地址即可，他们会互相同步
+      defaultZone: http://server2:8802/eureka/
+

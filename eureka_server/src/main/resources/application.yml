@@ -1,0 +1,40 @@
+
+#应用名称
+spring:
+  application:
+    name: eureka_server
+
+#端口号
+server:
+  port: 8801
+  #设置随机端口号，0表示随机
+#  port: 0
+
+#服务注册中心
+eureka:
+  #当前eureka服务实例配置
+  instance:
+    #可以使用主机名称和ip来进行注册服务，默认使用ip，在高可用环境下使用主机名来注册（需要修改hosts文件）
+    #问题：在使用主机名注册时，euraka可视化页面使用的也是主机名，会造成服务互相访问失败
+#    p-address: 192.168.0.101
+#    prefer-ip-address: true
+    hostname: server1
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  #当前eureka服务客户端配置
+  client:
+    #由于自己就是注册中心，false代表不向注册中心注册自己(服务注册)
+#    register-with-eureka: true
+    #注册中心职责维护实例，false代表不需要去检索实例(服务发现)
+#    fetch-registry: true
+    serviceUrl:
+      #在注册中心中代表构建的注册中心地址，多个可用'，'分割
+      #如果是eureka集群，这里的地址是其他注册中心的地址，注册中心相互引用并同步数据
+      #其他注册中心的地址写一个即可，他们之间互相同步
+      #在高可用环境下使用主机名来注册，那么这里也要写主机名，不能使用localhost或者ip地址
+      defaultZone: http://server2:8802/eureka/
+  #当前eureka服务服务端配置
+  server:
+    #关闭自我保护功能，注册中心将直接剔除不可用(异常)服务
+    enable-self-preservation: false
+    #清理异常服务时间
+    eviction-interval-timer-in-ms: 5000
