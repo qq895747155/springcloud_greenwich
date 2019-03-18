@@ -1,0 +1,42 @@
+spring:
+  application:
+    #应用名称
+    name: config-server
+  cloud:
+    #config配置
+    config:
+      server:
+        git:
+          #(http url与配置文件的映射，‘/’代表url中的‘/’)
+          #application：应用名称，profile:环境标识,label：git仓库分支名称，默认为master
+          #/{application}/{profile}[/{label}]
+          #/{application}-{profile}.yml
+          #/{label}/{application}-{profile}.yml
+          #/{application}-{profile}.properties
+          #/{label}/{application}-{profile}.properties
+          ##配置git仓库地址
+          uri: https://github.com/qq895747155/springcloud_greenwich_config/
+          ##配置git仓库下的相对搜索位置，也就是git仓库的子目录
+          search-paths: config
+#端口号
+server:
+  port: 8888
+
+#服务注册中心
+eureka:
+  instance:
+    #续约到期时间,心跳检查
+    lease-expiration-duration-in-seconds: 90
+    #续约更新时间
+    lease-renewal-interval-in-seconds: 30
+    #向注册中心注册显示的实例名称，默认取应用名称，如果名称和端口号都相同，会造成冲突
+    #1.不同应用服务设置不同名称来区分
+    #2.相同应用服务设置不同端口号来区分
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    #配置开启监控功能
+    healthcheck:
+      enable: true
+    serviceUrl:
+      #指向服务注册中心的地址，如果是注册中心集群，写一个注册中心的地址即可，他们会互相同步
+      defaultZone: http://server2:8802/eureka/

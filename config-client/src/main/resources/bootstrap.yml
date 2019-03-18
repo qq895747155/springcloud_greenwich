@@ -1,0 +1,23 @@
+spring:
+  application:
+    #应用名称，在配置文件组件中也对应着远程的配置文件名称
+    #对应配置文件规则中{application}部分
+    name: config-client
+  cloud:
+    config:
+      #开启从配置中心读取配置
+      enabled: true
+      #git仓库分支
+      #对应配置文件规则中{label}部分
+      label: master
+      #环境标识
+      #对应配置文件规则中{profile}部分
+      profile: dev
+      discovery:
+        #指定配置中心服务名称
+        service-id: config-server
+
+#服务中独有的配置，例如端口号，在github中对应各自服务配置的文件
+
+#各服务相同的配置，例如euraka注册配置，在github中对应公用的配置文件
+#公用的配置文件位于git仓库根目录下，application.yml文件，Springboot会自动扫描加载
