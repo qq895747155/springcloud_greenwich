@@ -9,6 +9,11 @@ import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+//springcloud 分布式微服务一般使用规则如下：
+//1。所有服务都注册到注册中心
+//2。所有的服务配置都使用配置中心
+//3。所有服务间的调用都通过gateway转发，例如：feign --> gateway --> up_server
+
 @SpringBootApplication
 @EnableDiscoveryClient
 //开启熔断器
